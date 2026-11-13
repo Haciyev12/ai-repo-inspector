@@ -1,33 +1,11 @@
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { makeFixtureRepo } from "./fixtures.js";
 
 const projectRoot = resolve(import.meta.dirname, "..");
-
-function git(cwd: string, ...args: string[]) {
-  execFileSync("git", ["-c", "user.name=test", "-c", "user.email=test@example.com", ...args], {
-    cwd,
-    stdio: "ignore",
-  });
-}
-
-/** Temp repo: `main` with one commit, `feature` adds `added.txt`. */
-function makeFixtureRepo(): string {
-  const dir = mkdtempSync(join(tmpdir(), "inspector-mcp-"));
-  git(dir, "init", "-q", "-b", "main");
-  writeFileSync(join(dir, "base.txt"), "base\n");
-  git(dir, "add", ".");
-  git(dir, "commit", "-q", "-m", "base");
-  git(dir, "checkout", "-q", "-b", "feature");
-  writeFileSync(join(dir, "added.txt"), "new\n");
-  git(dir, "add", ".");
-  git(dir, "commit", "-q", "-m", "feature");
-  return dir;
-}
 
 describe("MCP review_repository", () => {
   let repo: string;
