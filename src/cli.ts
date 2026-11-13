@@ -35,14 +35,20 @@ async function main() {
     return;
   }
 
-  const report = await reviewRepository({
+  const result = await reviewRepository({
     repositoryPath: args.repositoryPath,
     baseRef: args.baseRef,
     validationCommands: args.validations,
     format: args.format,
   });
-  writeFileSync("review-report.md", report, "utf8");
+  writeFileSync("review-report.md", result.markdown, "utf8");
   console.log("Review report written to review-report.md");
+
+  const failed = result.validationResults.filter((validation) => validation.status === "failed");
+  if (failed.length > 0) {
+    console.error(`${failed.length} validation command(s) failed: ${failed.map((v) => v.command).join(", ")}`);
+    process.exitCode = 1;
+  }
 }
 
 main().catch((error) => {

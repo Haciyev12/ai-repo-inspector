@@ -6,7 +6,17 @@ export type ChangedFile = {
 export type ValidationResult = {
   command: string;
   status: "passed" | "failed";
+  /** null when the process was killed by a signal or failed to start. */
+  exitCode: number | null;
+  timedOut: boolean;
+  /** Combined stdout+stderr, middle truncated beyond the output cap. */
   output: string;
+};
+
+export type ReviewResult = {
+  markdown: string;
+  changedFiles: ChangedFile[];
+  validationResults: ValidationResult[];
 };
 
 export type ReviewRequest = {

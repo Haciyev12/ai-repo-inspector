@@ -59,12 +59,12 @@ server.tool(
       };
     }
 
-    const report = await reviewRepository({
+    const result = await reviewRepository({
       repositoryPath: input.repo_path,
       baseRef: input.baseRef,
       validationCommands,
     });
-    return { content: [{ type: "text", text: report }] };
+    return { content: [{ type: "text", text: result.markdown }] };
   },
 );
 
