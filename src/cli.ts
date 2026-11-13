@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { writeFileSync } from "node:fs";
 import { reviewRepository } from "./core.js";
+import { DEFAULT_TIMEOUT_MS } from "./validation.js";
 
 type Args = {
   command: string;
@@ -39,6 +40,7 @@ async function main() {
     repositoryPath: args.repositoryPath,
     baseRef: args.baseRef,
     validationCommands: args.validations,
+    validationOptions: { timeoutMs: DEFAULT_TIMEOUT_MS },
     format: args.format,
   });
   writeFileSync("review-report.md", result.markdown, "utf8");

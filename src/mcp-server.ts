@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { reviewRepository } from "./core.js";
-import { disallowedCommands, MCP_ALLOWLIST_ENV, parseAllowlist } from "./validation-policy.js";
+import { disallowedCommands, MCP_ALLOWLIST_ENV, MCP_VALIDATION_OPTIONS, parseAllowlist } from "./validation-policy.js";
 
 let allowedValidations: ReadonlySet<string>;
 try {
@@ -63,6 +63,7 @@ server.tool(
       repositoryPath: input.repo_path,
       baseRef: input.baseRef,
       validationCommands,
+      validationOptions: MCP_VALIDATION_OPTIONS,
     });
     return { content: [{ type: "text", text: result.markdown }] };
   },

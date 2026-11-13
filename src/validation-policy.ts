@@ -1,3 +1,5 @@
+import type { ValidationOptions } from "./validation.js";
+
 /**
  * Which validation commands an MCP caller may run.
  *
@@ -10,6 +12,18 @@
  * as given, because the person typing them is the trust boundary.
  */
 export const MCP_ALLOWLIST_ENV = "INSPECTOR_MCP_ALLOWED_VALIDATIONS";
+
+/**
+ * MCP validation timing. The TypeScript MCP SDK client gives up on a request
+ * after 60 s by default (DEFAULT_REQUEST_TIMEOUT_MSEC in shared/protocol.js),
+ * and that covers the whole tool call. So MCP gets one 50 s budget for all
+ * commands together, leaving ~10 s for git, rendering and transport. Other
+ * MCP clients may use different timeouts.
+ */
+export const MCP_VALIDATION_OPTIONS: ValidationOptions = {
+  timeoutMs: 50_000,
+  totalTimeoutMs: 50_000,
+};
 
 /**
  * Parses the allowlist env var: a JSON array of command strings, e.g.

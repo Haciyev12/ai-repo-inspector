@@ -50,6 +50,20 @@ describe("runValidation", () => {
     expect(result.output.length).toBeLessThan(1_100);
   });
 
+  it("enforces a total time budget across commands and does not start commands once it is spent", async () => {
+    const started = Date.now();
+    const results = await runValidations(["sleep 5; echo a", "echo b"], cwd, { totalTimeoutMs: 300 });
+
+    expect(Date.now() - started).toBeLessThan(2_000);
+    expect(results.map((r) => [r.status, r.timedOut])).toEqual([
+      ["failed", true],
+      ["failed", true],
+    ]);
+    expect(results[1].exitCode).toBeNull();
+    expect(results[1].output).toMatch(/not run/i);
+    expect(results[1].output).not.toContain("b\n");
+  }, 4_000);
+
   it("does not crash on output beyond 1 MB with default options", async () => {
     const result = await runValidation(node("process.stdout.write('y'.repeat(2_000_000))"), cwd);
 

@@ -54,6 +54,24 @@ npm run inspector -- review --repo ./path/to/repo --validate "npm test"
 
 The report is written to `review-report.md`.
 
+### Validation behavior
+
+| | CLI | MCP |
+|---|---|---|
+| Which commands run | any `--validate` command, as given | only exact matches of `INSPECTOR_MCP_ALLOWED_VALIDATIONS` (none by default) |
+| Timeout | 120 s per command | 50 s total for all commands in one call |
+| Output per command | stdout+stderr, capped at 16 KiB | same |
+| Failure | report shows `failed (exit N)`, process exits 1 | report shows `failed (exit N)`, tool call still succeeds |
+
+- A command that times out is killed with its whole process group and shown
+  as `failed (timed out)`. Under MCP, commands left when the 50 s budget is
+  spent are not started.
+- MCP uses 50 s because the TypeScript MCP SDK client gives up after 60 s by
+  default (`DEFAULT_REQUEST_TIMEOUT_MSEC`). Other clients may differ.
+- Output over the cap keeps the first and last 8 KiB with
+  `[… N bytes omitted]` between them.
+- Later commands still run after one fails.
+
 ## MCP
 
 Start the stdio server with:

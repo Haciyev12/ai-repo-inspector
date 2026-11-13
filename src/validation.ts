@@ -6,6 +6,12 @@ export type ValidationOptions = {
   timeoutMs?: number;
   /** Max bytes of combined stdout+stderr kept; the middle is dropped beyond this. */
   maxOutputBytes?: number;
+  /**
+   * Budget for all commands together (runValidations only). Each command gets
+   * min(timeoutMs, time left); once it is spent, remaining commands are not
+   * started and are reported as failed + timedOut.
+   */
+  totalTimeoutMs?: number;
 };
 
 export const DEFAULT_TIMEOUT_MS = 120_000;
@@ -87,9 +93,24 @@ export async function runValidations(
   cwd: string,
   options: ValidationOptions = {},
 ): Promise<ValidationResult[]> {
+  const { totalTimeoutMs, ...perCommand } = options;
+  const deadline = totalTimeoutMs === undefined ? Infinity : Date.now() + totalTimeoutMs;
+  const perCommandTimeout = perCommand.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+
   const results: ValidationResult[] = [];
   for (const command of commands) {
-    results.push(await runValidation(command, cwd, options));
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+      results.push({
+        command,
+        status: "failed",
+        exitCode: null,
+        timedOut: true,
+        output: `[not run: total validation budget of ${totalTimeoutMs} ms was spent]`,
+      });
+      continue;
+    }
+    results.push(await runValidation(command, cwd, { ...perCommand, timeoutMs: Math.min(perCommandTimeout, remaining) }));
   }
   return results;
 }

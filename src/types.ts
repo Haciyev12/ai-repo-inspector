@@ -1,3 +1,5 @@
+import type { ValidationOptions } from "./validation.js";
+
 export type ChangedFile = {
   path: string;
   status: "added" | "modified" | "deleted" | "untracked";
@@ -23,5 +25,7 @@ export type ReviewRequest = {
   repositoryPath: string;
   baseRef?: string;
   validationCommands?: string[];
+  /** Set by each interface; see validation.ts for the defaults. */
+  validationOptions?: ValidationOptions;
   format?: "markdown" | "json";
 };
