@@ -66,6 +66,28 @@ It exposes a `review_repository` tool. Inspect the implementation to determine
 its current input contract and whether it is suitable for the production model
 you propose.
 
+### Validation commands over MCP are off by default
+
+MCP callers are AI models, which can be steered by content in the repository
+they review, so they cannot choose shell commands freely. Whoever starts the
+server opts in to specific commands with an exact-match allowlist, given as a
+JSON array:
+
+```bash
+INSPECTOR_MCP_ALLOWED_VALIDATIONS='["npm test","npm run lint"]' npm run mcp-server
+```
+
+- Unset or empty: no validation commands run.
+- A requested command must match an entry exactly (no trimming, no prefix
+  matching). If any requested command is not allowed, the call returns an
+  error and nothing runs.
+- A malformed value stops the server at startup.
+
+> **The CLI is not covered by this allowlist.** `inspector review --validate`
+> runs any command exactly as given, because the person typing it is the trust
+> boundary. An agent that can run the CLI through a shell can run arbitrary
+> commands that way. Restrict that with the agent's own shell permissions.
+
 ## Project layout
 
 ```text
